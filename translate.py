@@ -18,8 +18,9 @@ def translate_char(char):
   elif top_term.has_key('OtherSideEntries'):
     translation = top_term['OtherSideEntries']['0']['OriginalTerm']['term']
 
-  print translation
   return translation.split(',')[0]
 
+def tag_word()
+
 if __name__ == '__main__':
-  translate_char(sys.argv[1])
+  print translate_char(sys.argv[1])
