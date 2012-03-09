@@ -30,5 +30,4 @@ def translate_file(fname):
 if __name__ == '__main__':
   translate_file(sys.argv[1])
   os.chdir('tagger')
-  print os.getcwd()
   os.system('./stanford-postagger.sh models/english-bidirectional-distsim.tagger ../translated_data > ../tagged_data')

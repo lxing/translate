@@ -16,7 +16,7 @@ def mt_transform(infile):
     
     # transform sentence
     for sentence in data:
-        sentence = [tuple(token.split('/')) for token in sentence.strip().split(' ')];
+        sentence = [tuple(token.split('_')) for token in sentence.strip().split(' ')];
         
         # Reordering rules
         
@@ -29,6 +29,7 @@ def mt_transform(infile):
         result_tags = []
         prevword = ""
         prevtag = ""
+        m = 0
 
         for word, tag in sentence:
             no_append = False
@@ -84,7 +85,7 @@ def mt_transform(infile):
                         old_tag = result_tags.pop()
                         result.insert(-k+m+1, old_r)
                         result_tags.insert(-k+m+1, old_tag)
-                        
+                    
                     # finally append word to that position
                     result.insert(-k+m+1, word)
                     result_tags.insert(-k+m+1, tag)
