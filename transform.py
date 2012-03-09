@@ -30,7 +30,8 @@ def mt_transform(infile):
         prevword = ""
         prevtag = ""
         m = 0
-
+        rule3_used = False
+        
         for word, tag in sentence:
             no_append = False
             # 1. Delete repeated words
@@ -45,8 +46,13 @@ def mt_transform(infile):
                 elif prevtag in ['NNS', 'NNPS']:
                     result[-1] = result[-1] + "s'"
                     no_append = True
-                    
-            if tag == 'CD':
+            
+            
+            # rule 4: check for noun following rule 3
+            if not tag in ['NN','NNP', 'NNS', 'NNPS']:
+                rule3_used = False
+            
+            if rule3_used or tag == 'CD':
                 # 3. check if right before a noun
                 noun_before = False
                 for j in range(1, len(result)+1):
@@ -78,25 +84,28 @@ def mt_transform(infile):
                         k = prev_prop_pos
                     else:
                         k = prev_noun_pos
+                        
+                    # append word to that position
+                    result.insert(-k+m, word)
+                    result_tags.insert(-k+m, tag)
+                    no_append = True
+                    rule3_used = True
                     
                     # bring words to in front of that position k
                     for m in range(j-1):
                         old_r = result.pop()
                         old_tag = result_tags.pop()
-                        result.insert(-k+m+1, old_r)
-                        result_tags.insert(-k+m+1, old_tag)
+                        result.insert(-k+m, old_r)
+                        result_tags.insert(-k+m, old_tag)
                     
-                    # finally append word to that position
-                    result.insert(-k+m+1, word)
-                    result_tags.insert(-k+m+1, tag)
-                    no_append = True
+
             
-            # 4. discard additional 'to' between verb and objects, eg 'kan dao ta' => 'saw to him' => 'saw him'
+            # 5. discard additional 'to' between verb and objects, eg 'kan dao ta' => 'saw to him' => 'saw him'
             OBJ = NOUNS + ADJ + ADV + ['CD']
             if tag in OBJ and len(result) > 1 and result_tags[-1] == 'TO' and result_tags[-2] in VERBS:
                 result = result[:-1]
             
-            # 5. remove verbs in a row, since these tend to be the product of one Chinese multi-char verb converted
+            # 6. remove verbs in a row, since these tend to be the product of one Chinese multi-char verb converted
             # to multiple English verbs. use the last verb in the sequence since this usually most semantically
             # meaningful
             if tag in VERBS and prevtag in VERBS:
