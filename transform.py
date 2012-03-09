@@ -12,7 +12,7 @@ def mt_transform(infile):
     ADV = ['RB','RBR','RBS']
     ADJ = ['JJ','JJR','JJS']
     NOUNS = ['NN','NNS','NNP','NNPS']
-    VERBS = ['VBD','VBG','VBN','VBP','VBZ']
+    VERBS = ['VB','VBD','VBG','VBN','VBP','VBZ']
     
     # transform sentence
     for sentence in data:
@@ -97,7 +97,7 @@ def mt_transform(infile):
                         old_tag = result_tags.pop()
                         result.insert(-k+m, old_r)
                         result_tags.insert(-k+m, old_tag)
-                    
+
 
             
             # 5. discard additional 'to' between verb and objects, eg 'kan dao ta' => 'saw to him' => 'saw him'
