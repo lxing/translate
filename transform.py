@@ -8,6 +8,11 @@ def mt_transform(infile):
     data = fi.readlines();
     fi.close();
     answer = []
+
+    ADV = ['RB','RBR','RBS']
+    ADJ = ['JJ','JJR','JJS']
+    NOUNS = ['NN','NNS','NNP','NNPS']
+    VERBS = ['VBD','VBG','VBN','VBP','VBZ']
     
     # transform sentence
     for sentence in data:
@@ -43,21 +48,20 @@ def mt_transform(infile):
                 # 3. check if right before a noun
                 noun_before = False
                 for j in range(1, len(result)+1):
-                    if result_tags[-j] in ['NN','NNS','NNP','NNPS']:
+                    if result_tags[-j] in NOUNS:
                         noun_before = True
                         break
                     # if not adverb or adj break
-                    elif result_tags[-j] not in ['JJ','JJR','JJS','RB','RBR','RBS']:
+                    elif result_tags[-j] not in ADJ + ADV:
                         break
                 
                 if noun_before:
                     # bring everything after the noun to before the prev preposition / noun
-
                     prev_noun_pos = j
                     prev_prop_pos = -1
                     same_noun = True
                     for k in range(j+1, len(result)+1):
-                        if same_noun and result_tags[-k] in ['NN','NNS','NNP','NNPS']:
+                        if same_noun and result_tags[-k] in NOUNS:
                             prev_noun_pos = k
                         else:
                             same_noun = False
@@ -65,7 +69,7 @@ def mt_transform(infile):
                             prev_prop_pos = k
                             break
                         # too far back
-                        if k - j+1 > 4:
+                        if k - j + 1 > 4:
                             break
                     
                     if prev_prop_pos != -1:
@@ -84,7 +88,14 @@ def mt_transform(infile):
                     result.insert(-k+m+1, word)
                     result_tags.insert(-k+m+1, tag)
                     no_append = True
-                        
+            
+            # 4. discard additional 'to' between verb and objects
+            OBJ = NOUNS + ADJ + ADV + ['CD']
+            if tag in OBJ and len(result) > 1 and result_tags[-1] == 'TO' and result_tags[-2] in VERBS:
+                result = result[:-1]
+            
+            
+            
             prevword = word
             prevtag = tag
             if not no_append:
