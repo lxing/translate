@@ -29,6 +29,7 @@ def mt_transform(infile):
         result_tags = []
         prevword = ""
         prevtag = ""
+
         for word, tag in sentence:
             no_append = False
             # 1. Delete repeated words
@@ -89,12 +90,17 @@ def mt_transform(infile):
                     result_tags.insert(-k+m+1, tag)
                     no_append = True
             
-            # 4. discard additional 'to' between verb and objects
+            # 4. discard additional 'to' between verb and objects, eg 'kan dao ta' => 'saw to him' => 'saw him'
             OBJ = NOUNS + ADJ + ADV + ['CD']
             if tag in OBJ and len(result) > 1 and result_tags[-1] == 'TO' and result_tags[-2] in VERBS:
                 result = result[:-1]
             
-            
+            # 5. remove verbs in a row, since these tend to be the product of one Chinese multi-char verb converted
+            # to multiple English verbs. use the last verb in the sequence since this usually most semantically
+            # meaningful
+            if tag in VERBS and prevtag in VERBS:
+                result = result[:-1]
+                result_tags = result_tags[:-1]
             
             prevword = word
             prevtag = tag
@@ -107,4 +113,4 @@ def mt_transform(infile):
 
 if __name__ == '__main__':
   for sentence in mt_transform(sys.argv[1]):
-    print sentence
+    print sentence + '\n'
