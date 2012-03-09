@@ -1,26 +1,34 @@
-import sys, urllib2, json
+import sys, string, os
 
-# note the api key is 412ca
-translate_url = 'http://api.wordreference.com/412ca/json/zhen/'
+space = ' '
+outfilename = 'translated_data'
+tagfilename = 'tagged_data'
 
-# Translate a chinese character to the nearest english word
-def translate_char(char):
-  response = urllib2.urlopen(translate_url + char)
-  raw_data = response.read()
-  print raw_data
-  data = json.loads(raw_data)
+def translate_file(fname):
+  space = ' '
 
-  top_term = data['term0']
-  if top_term.has_key('PrincipalTranslations'):
-    translation = top_term['PrincipalTranslations']['0']['FirstTranslation']['term]']
-  elif top_term.has_key('Entries'):
-    translation = top_term['Entries']['0']['FirstTranslation']['term']
-  elif top_term.has_key('OtherSideEntries'):
-    translation = top_term['OtherSideEntries']['0']['OriginalTerm']['term']
+  dictionary = {}
+  dictfile = open('dictionary')
+  for entry in dictfile.readlines():
+    zh = entry.split(' ')[0]
+    en = space.join(entry.split(' ')[1:]).strip()
+    dictionary[zh] = en
 
-  return translation.split(',')[0]
-
-def tag_word()
+  infile = open(fname)
+  outfile = open(outfilename, 'w')
+  for sentence in infile.readlines():
+    outsent = []
+    for word in sentence.split(' '):
+      word = word.strip()
+      if word in dictionary:
+        outsent.append(dictionary[word])
+      else:
+        print word, 'not found in dictionary'
+        outsent.append(word)
+    outfile.write(space.join(outsent) + ' .\n')
 
 if __name__ == '__main__':
-  print translate_char(sys.argv[1])
+  translate_file(sys.argv[1])
+  os.chdir('tagger')
+  print os.getcwd()
+  os.system('./stanford-postagger.sh models/english-bidirectional-distsim.tagger ../translated_data > ../tagged_data')
