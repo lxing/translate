@@ -32,10 +32,10 @@ def mt_transform(infile):
                 
             if word == 'of' and tag == 'IN':
                 # 2. check if prev word is noun, don't append and add 's to prev word if so
-                if prevtag == 'NN' or prevtag == 'NNP':
+                if prevtag in ['NN','NNP']:
                     result[-1] = result[-1] + "'s"
                     no_append = True
-                elif prevtag == 'NNS' or prevtag == 'NNPS':
+                elif prevtag in ['NNS', 'NNPS']:
                     result[-1] = result[-1] + "s'"
                     no_append = True
                     
@@ -43,21 +43,21 @@ def mt_transform(infile):
                 # 3. check if right before a noun
                 noun_before = False
                 for j in range(1, len(result)+1):
-                    if result_tags[-j] == 'NN' or result_tags[-j] == 'NNS' or result_tags[-j] == 'NNP' or result_tags[-j] == 'NNPS':
+                    if result_tags[-j] in ['NN','NNS','NNP','NNPS']:
                         noun_before = True
                         break
                     # if not adverb or adj break
-                    elif result_tags[-j] != 'JJ' and result_tags[-j] != 'JJR' and result_tags[-j] != 'JJS' and result_tags[-j] != 'RB' and result_tags[-j] != 'RBR' and result_tags[-j] != 'RBS':
+                    elif result_tags[-j] not in ['JJ','JJR','JJS','RB','RBR','RBS']:
                         break
                 
                 if noun_before:
                     # bring everything after the noun to before the prev preposition / noun
-                    
+
                     prev_noun_pos = j
                     prev_prop_pos = -1
                     same_noun = True
                     for k in range(j+1, len(result)+1):
-                        if same_noun and result_tags[-k] == 'NN' or result_tags[-k] == 'NNS' or result_tags[-k] == 'NNP' or result_tags[-k] == 'NNPS':
+                        if same_noun and result_tags[-k] in ['NN','NNS','NNP','NNPS']:
                             prev_noun_pos = k
                         else:
                             same_noun = False
@@ -90,8 +90,10 @@ def mt_transform(infile):
             if not no_append:
                 result.append(word)
                 result_tags.append(tag)
+
         answer.append(' '.join(result))
     return answer
 
 if __name__ == '__main__':
-  print mt_transform(sys.argv[1])
+  for sentence in mt_transform(sys.argv[1]):
+    print sentence
