@@ -1,0 +1,181 @@
+CS124
+PA7: MT Report
+Alex Chia + Lawrence Xing
+alexchia@stanford.edu, lxing@stanford.edu
+
+<F Language>
+
+The F language we’re working with is Mandarin Chinese. One difficulty with Chinese is that there are many idiomatic Chinese phrases that lose meaning when broken down into their components. For instance, the Chinese phrase for “beautiful”, when translated character by character, is “float light”.
+Furthermore, Chinese is not ideal for a word-by-word translation approach due to the high frequency of homonyms -- a comprehensive Chinese dictionary has around 40,000 characters1 while the Oxford Dictionary lists over 250,000 words. Because many Chinese characters have many different meanings, assigning one English word for one character risks missing many alternative translations of that character. As an example, 能 can be interpreted as both “energy” and the verb “can” -- two relatively common English words.
+Another challenge is sentence segmentation. If the commas were preserved, many Chinese sentences would contain enough clauses to constitute a run-on sentence in English. Thus there must be some way to cut down on the size of F sentences with multiple independent clauses.
+On the bright side, Mandarin has a familiar SOV grammar structure that should prevent the need for extreme POS rearrangements. 
+
+<Test Sentences>
+
+To obtain the test sentences, we browsed Chinese news sites and the Chinese Wikipedia for random articles and selected random sentences from those. The test document, with our own translations, was then:
+
+1) 昨 日，十 一 届 全 国 人 大 五 次 会 议 海 南 代 表 团 对 媒 体 开 放 .
+Yesterday, the eleventh session of the fifth meeting of the Hainan People's delegation was opened to the media.
+
+2) 这 么 大 的 客 流 ， 我 们 既 感 到 高 兴 ，又 感 到 很 大 压 力 .
+With such a large passenger flow, we feel happiness but also a lot of pressure.
+
+3) Levinson 时 家 人 2010 年 收 到 一 段 时 长 54 秒 的 如 视 频 .
+In 2010, Levinson's family received a 54 second video.
+
+4) 啤 酒 是 世 上 历 史 最 悠 久 ， 普 及 范 围 最 广 的 酒 精 饮 料 之 一 .
+Beer is one of the world's oldest beverages, and also one of the most popular alcoholic drinks.
+
+5) 一 些 小 党 的 参 选 人 有 时 也 有 可 能 当 选 .
+Sometimes a few small party candidates also have a chance of being elected.
+
+6) 万 众 瞩 目 的 新 iPad 终 于 揭 开 了 神 秘 的 面 纱 .
+The much anticipated new iPad has finally revealed itself.
+
+7) 相 比 较 苹 果 的 股 价 来 说 ， Chipotle 的 股 价 并 不 昂 贵 .
+As compared to Apple's share price, Chipotle's share price is not very expensive.
+
+8) 无 论 您 刚 接 触 电 脑 还 是 一 个 有 经 验 的 程 序 员 ， 本 书 都 将 有 助 您 学 习 使 用 Python 语 言 .
+Regardless of whether you are new to computers or an experienced programmer, this book will help you learn how to use the Python language.
+
+9) 原 子 弹 是 利 用 铀 和 鈈 等 较 容 易 裂 变 的 重 原 子 核 在 核 裂 变 瞬 间 可 以 发 出 巨 大 能 量 的 原 理 而 发 生 爆 炸 的 .
+The atomic bomb derives its explosive force from the large amount of energy released from the fission of Uranium, Plutonium, and other fissile elements with heavy nuclei.
+
+10 ) 2010 年 版 的 美 国 新 闻 与 世 界 报 导 把 Stanford 的 本 科 课 程 排 在 全 美 国 第 四 .
+The 2010 edition of U.S. News & World Report ranked Stanford's undergraduate program fourth in the United States.
+
+We manually generated the dictionary from single queries to translate.google.com. The raw tagged result was
+
+1) yesterday_NN day_NN ，_CD ten_CD one_CD session_NN all_DT country_NN people_NNS large_JJ five_CD order_NN conference_NN discuss_VBP sea_NN south_NN generation_NN table_NN group_NN to_TO media_NNS body_NN open_JJ put_NN ._.
+
+2) this_DT it_PRP large_JJ of_IN passenger_NN flow_NN ，_NN I_PRP are_VBP both_DT sense_NN to_TO happiness_NN ，_NN also_RB sense_VBP to_TO very_RB large_JJ press_NN force_NN ._.
+
+3) Levinson_NNP time_NN home_NN people_NNS 2010_CD year_NN receive_VBP to_TO one_CD section_NN time_NN long_JJ 54_CD second_NN of_IN as_IN regard_NN frequency_NN ._.
+
+4) beer_NN wine_NN be_VB world_NN on_IN calendar_NN history_NN most_JJS swing_NN long_JJ ，_NN general_NN and_CC fan_NN surround_VBP most_RBS wide_JJ of_IN wine_NN essence_NN drink_NN materaial_NN of_IN one_CD ._.
+
+5) one_CD some_DT small_JJ party_NN of_IN participate_VB selected_VBN people_NNS have_VBP time_NN also_RB have_VBP can_MD can_MD be_VB selected_VBN ._.
+
+6) ten_CD thousand_CD multitude_NN visions_NNS eye_NN of_IN new_JJ iPad_JJ end_NN in_IN expose_VB open_RP a_DT God_NNP secret_NN of_IN surface_NN yarn_NN ._.
+
+7) mutually_RB compare_VB relatively_RB apple_NN fruit_NN of_IN share_NN price_NN come_VBN say_VBP ，_NNP Chipotle_NNP of_IN share_NN price_NN also_RB not_RB expensive_JJ expensive_JJ ._.
+
+8) no_DT discuss_VBP you_PRP just_RB connect_VB touch_NN electricity_NN brain_NN also_RB be_VB one_CD a_DT have_JJ regular_JJ test_NN of_IN journey_NN sequence_NN member_NN ，_NN this_DT book_NN all_DT will_MD have_VB help_VB you_PRP learn_VB study_NN make_VBP use_NN Python_NN language_NN word_NN ._.
+
+9) original_JJ child_NN bomb_NN be_VB interest_NN use_NN uranium_NN and_CC plutonium_NN etc_NN relatively_RB allow_VBP easy_JJ split_JJ change_NN of_IN heavy_JJ original_JJ child_NN nuclear_JJ in_IN nuclear_JJ split_NN change_NN instant_NN between_IN can_NN with_IN send_VB out_RP huge_JJ large_JJ can_NN amount_NN of_IN original_JJ reason_NN and_CC send_VB raw_JJ explode_VBP explode_VB of_IN ._.
+10) 2010_CD year_NN version_NN of_IN U.S._NNP country_NN new_JJ story_NN and_CC world_NN world_NN report_NN guide_NN hold_VBP Stanford_NNP of_IN this_DT subject_JJ class_NN journey_NN arrange_VB in_IN all_DT U.S._NNP country_NN first_JJ four_CD ._.
+
+<Translation rules>
+
+1) Our first rule was to remove duplicate words. Some Chinese phrases consist of two characters with approximately equivalent meanings combined to form a phrase with the same meaning. The translated phrase, then, will contain some redundant English words. It’s an obvious and easy improvement to fluency to detect these duplicates and to delete them without any impact to fidelity. As an example, the phrase 世界 报 was translated in our raw system to “world world report” which the rule resolved to “world report” correctly.
+
+2) The next rule we implemented involved a single common Chinese character: 的. It was translated by our dictionary to “of”, but its true meaning most frequently is that of possession. eg. (DOG 的 TAIL) is equivalent to “dog’s tail”.
+
+Hence we created a rule in which all singular nouns which were followed by the 的 character would be modified to NOUN’s, and all plural nouns followed by the 的 character would be modified to NOUNs’, following the rules for the English language.
+
+This worked out rather well, because it was quite a close mapping to the actual usage of the 
+的 character.
+
+3) The Mandarin language has this particular way of describing nouns, especially when its description involves numbers. These numbers and modifiers tend to be placed after the noun in question, instead of before, in the English language.
+
+For example, in test sentence 10, “..排 在 全 美 国 第 四”. This literally means “ranked fourth in the United States”, but when translated word by word, it translates to “arranged (ranked) in all U.S. first four”.
+
+Hence, we created a rule that selected all the words which were modifiers and numbers directly after a noun and moved it in front of the preposition directly before the noun in question. We only searched up to a maximum of 7 words before, so as not in inadvertently intrude on other sentence structure. If no preposition was found, we just inserted the modifiers and numbers directly in front of the noun so as to follow English grammatical rules.
+
+4) Rule #3 had some edge cases that it did not cover, in that sometimes, the number itself was a descriptor for another noun. eg. “2010 年” meant “Year 2010”, (translates as “2010 Year”) but if we only moved 2010 to in front of the previous preposition as per rule #3, but not the noun “Year”, we would have a hanging “year” word which did not make sense.
+
+Hence we created a rule that moved nouns that came directly after numbers together with the numbers and modifiers in rule 3; to the front of the previous preposition / noun.
+
+5) Many verb phrases involve the character 至, which by itself means “to”. When used in a verb phrase, though, this modifies the actual verb itself to indicate the initiation of an action. For instance, 看 might mean “watch”, while 看至 means “saw”. In these cases, the translation to “to”, a preposition, is meaningless.
+
+To detect this we created a rule that would strip all instances of “to” tagged as a preposition lying after a verb and before a noun / noun modifier. The result was an increase in fluency; for example, “receive to one section” was modified to “receive one section” in the test document. In another instance, “sense to happiness” would have been converted to “sense happiness”, except the tagger incorrectly tagged “sense” as a noun and allowed it to dodge the rule.	
+
+6) This rule was similar to Rule 1, but a little broader. When Chinese phrases are translated to two or more English words, it usually turns out that one or more words is redundant. We used the property that it’s very uncommon for two Chinese verb phrases to appear in a row to identify redundant pairs of words stemming from the same verb phrase. The tagged text
+
+a_V b_V
+
+is more likely to have originated from a single verb phrase then two single-character verbs. With this in mind, the rule basically keeps a running count of all consecutive tagged verbs and discards all of them except the last, which tends to be more meaningful than the rest. In our test data, the phrase “come say” was reduced to “say” and “will have help” is truncated to just “will help”. 
+
+<Error Analysis>
+
+The tagged strings, transformed by our rules, yielded:
+
+1) ten one session yesterday day all large five conference order country people discuss sea south generation table group to media body open put.
+
+2) this it large of passenger flow，I are both sense to happiness，also sense very large press force .
+
+3) 2010 year Levinson time home people receive one long 54 second section time's as regard frequency .
+
+4) beer wine be world on calendar history most swing long， general and fan surround most wide one of wine essence drink material's .
+
+5) one some small party's participate selected people have time also have can be selected .
+
+6) ten thousand multitude visions eye's new iPad end in expose open a God secret's surface yarn .
+
+7) mutually compare relatively apple fruit's share price say， Chipotle's share price also not expensive .
+
+8) no discuss you just connect touch electricity brain also be one a have regular test's journey sequence member， this book all will have help you learn study make use Python language word.
+
+9) original child bomb be interest use uranium and plutonium etc relatively allow easy split change's heavy original child nuclear in nuclear split change instant between can with send out huge large can amount's original reason and send raw explode of .
+
+10) 2010 year version's U.S. country new story and world report guide hold Stanford's this subject class journey arrange first four in all U.S. country .
+
+
+We lost a lot of fidelity in the translation of phrases. “video” was converted to the unintelligible “regard frequency”, “Hainan” was translated as “sea south”, “computer” was “electricity brain”, etc. These were pretty much unavoidable since the translating script couldn’t use any context. Ideally, we would have used a phrase-based dictionary to capture the more expressive phrases of the F language.
+
+Our translations were also not good at decoding verb conjugation such as tense and plurality. For example, “I are both sense...”  instead of “I sense” and “guide hold” instead of “guide holds”. One way to fix this would be to create a large dictionary of conjugations for common English verbs and to do another pass over the test sentences, using the context of the subject and object in SVO tuples to find the appropriate conjugation.
+
+The third rule seemed to perform well for some instances of numerical modifiers, for example “in all US first four” -> “first four in all US” and “of most wide alcoholic beverage one” -> “one of most wide alcoholic beverage”. However, the rule seemed to hurt sentence 1 when it converted “yesterday, eleven session of...” to “eleven session yesterday,...” and “all country people large five order conference” (national people’s fifth conference) to “all five conference order country”, essentially scrambling the meaning. One way to fix the first anomaly would be to halt the scan for a preceding noun / preposition on preposition tags, to prevent pulling a number into a completely alien clause. The second problem came about because the rule actually didn’t need to be applied; there was no preposition to generate the fluent “five of”. In this case, we might modify the rule to abort if no preposition was found.
+
+
+<Google Translate>
+
+Google Translate gave the following results:
+
+1) Yesterday, the Eleventh National People's Congress of Hainan delegation is open to the media.
+
+2) Such a large passenger flow, we both are pleased, but also feel a lot of pressure.
+
+3) Levinson's family received in 2010 for some time is 54 seconds long video.
+
+4) Beer is one of the world 's longest history, the popularity of the widest range of alcoholic beverages.
+
+5) Small-party candidates, sometimes may be elected.
+
+6) The much-anticipated new iPad has finally opened a veil of mystery.
+
+7) Compared to Apple's stock price to Chipotle's stock price is not expensive.
+
+8) Whether you are new to computers or an experienced programmer, this book will help you learn to use the Python language.
+
+9) The atomic bomb is the use of such as uranium and plutonium easier fission of heavy nuclei in nuclear fission instant can be issued huge energy principle of explosion.
+
+10) The 2010 edition of U.S. News & World Report, Stanford's undergraduate courses in the United States fourth.
+
+Both our systems performed particularly well on sentences 2, 5, 7, and 10. In particular, our number-reordering rule for PREP-NOUN-NUM -> NUM-PREP-NOUN correctly translated “first four in all U.S.”, while the Google results still preserved “in the U.S. fourth”. Both systems were also able to correctly identify the extremely common character 的 as indicating possession; for instance, “Chipotle’s stock price”.
+
+Interestingly, Google translate completely dropped the “fifth meeting” section of the first test sentence, whereas our transformation completely mangled it. It seems that the consecutive ordering of many cardinal numberings, combined with the foreign ordering rules for indicating cardinality, proved too much for both our systems to handle.
+
+Google translate was mostly able to use the context to determine tense, and/or at least maintain a consistent tense for all the verbs. This was something our dictionary was unable to do, although we mentioned a verb conjugation dictionary as a possible solution. The one case where Google faltered was the first test case, where it was unable to use “yesterday” to establish the past tense.
+
+Regarding the word 的, our rules interpreted it as most commonly indicating possession. However, it has a ton of different uses, some of which were stomped by our single conversion rule. One of these is just to bind an adjective to a noun, in which case the 的 could probably just be deleted. One instance of this was “54 second section time 的 <video>”, which we incorrectly converted to the possessive “54 second section time’s <video>” while Google translate correctly identified the correct usage as “54 second <video>”. 
+
+<Responsibilities>
+
+{ L : Lawrence, A : Alex }
+L and A collaborated on constructing the dictionary and each obtained half of the sentences for the test document. L wrote the script to translate F to E and tag it. L and A both worked on about half the rules each for the transformation, though A implemented the considerably harder number reordering rule. The report was split equally.
+
+1 http://en.wikipedia.org/wiki/Chinese_language#Chinese_characters
+
+Text retrieved from:
+1. http://news.xinhuanet.com/politics/2012lh/2012-03/08/c_122805391.htm
+2. http://news.xinmin.cn/rollnews/2012/03/08/13947634.html
+3. http://news.baidu.com/n?cmd=2&class=internews&page=http%3A%2F%2Fnews.qianlong.com%2F28874%2F2012%2F03%2F08%2F2502%407761522.htm&clk=lrel&cls=internews&where=toppage
+4. http://zh.wikipedia.org/wiki/%E5%95%A4%E9%85%92
+5. http://zh.wikipedia.org/wiki/%E7%BE%8E%E5%9B%BD
+6. http://news.xinhuanet.com/tech/2012-03/08/c_122807067.htm
+7. http://finance.qq.com/a/20120308/003195.htm
+8. http://woodpecker.org.cn/abyteofpython_cn/chinese/
+9. http://zh.wikipedia.org/wiki/%E5%8E%9F%E5%AD%90%E5%BC%B9
+10. http://zh.wikipedia.org/wiki/%E5%8F%B2%E4%B8%B9%E4%BD%9B%E5%A4%A7%E5%AD%B8
+ 
